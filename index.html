@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cuestionario</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            text-align: center;
+        }
+
+        #cuestionario-container {
+            max-width: 600px;
+            margin: 50px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .pregunta {
+            margin: 20px 0;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            text-align: left;
+        }
+
+        input[type="radio"] {
+            margin-right: 5px;
+        }
+
+        #boton-container {
+            margin-top: 20px;
+        }
+
+        button {
+            background-color: #4caf50;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #resultado-container {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div id="cuestionario-container">
+    <h1>Cuestionario</h1>
+    <div id="pregunta-container"></div>
+    <div id="boton-container">
+        <input type="radio" name="respuesta" value="V" id="verdadero"> Verdadero
+        <input type="radio" name="respuesta" value="F" id="falso"> Falso
+        <button onclick="siguientePregunta()">Siguiente Pregunta</button>
+    </div>
+    <div id="resultado-container"></div>
+</div>
+
+<script>
+    var preguntas = [
+        {"pregunta": "El parcial se toma al finalizar cada cuatrimestre para evaluar el trayecto del mismo, si se obtiene más de 8 en ambos o la sumatoria de ambas notas da 8, se accede a la promoción.", "respuesta": true, "correccion": ""},
+        {"pregunta": "El coloquio se toma antes de haber aprobado ambos parciales, y aprobando el mismo se obtiene la promoción y acreditación de la materia.", "respuesta": false, "correccion": "El coloquio se toma luego de haber aprobado ambos parciales, y aprobando el mismo se obtiene la promoción y acreditación de la materia."},
+        {"pregunta": "El final se da incluso si promocionaste la materia/seminario/taller, y se rinde frente a un tribunal la materia completa. (Queda sujeta también a lo que el docente solicite)", "respuesta": false, "correccion": "El final se da cuando no promocionaste la materia/seminario/taller, y se rinde frente a un tribunal la materia completa. (Queda sujeta tambien a lo que el docente solicite)"},
+        {"pregunta": "Cumplir con el 75% de asistencia y hasta el 50%, incluso cuando las ausencias no obedezcan a razones de salud, trabajo y/o situaciones excepcionales debidamente comprobadas. Cada cátedra fijará las condiciones de regularidad.", "respuesta": false, "correccion": "Cumplir con el 75% de asistencia y hasta el 50% cuando la ausencias obedezcan a razones de salud, trabajo y/o situaciones excepcionales debidamente comprobadas. Cada catedra fijara las condiciones de regularidad."},
+        {"pregunta": "El estudiante libre no cursa la materia y deberá aprobar un examen final ante un Tribunal con una nota mínima de 6 (seis) puntos.", "respuesta": true, "correccion": ""},
+        {"pregunta": "No mantendrá condición de estudiante regular con cursado semi presencial aquel que como mínimo, cumpla con el 40% de asistencia a cada cuatrimestre.", "respuesta": false, "correccion": "Mantendrá condición de estudiante regular con cursado semi presencial aquel que como mínimo, cumpla con el 40% de asistencia a cada cuatrimestre."},
+        {"pregunta": "Los Seminarios/Proyectos/Módulos podrán ser cursados con categoría de estudiantes regulares o no regulares, ya sea con modalidad presencial o semi-presencial.", "respuesta": false, "correccion": "Los Seminarios/Proyectos/Módulos podrán ser cursados solamente con categoría de estudiantes regulares, ya sea con modalidad presencial o semi-presencial."},
+        {"pregunta": "Admitirán el cursado no regular presencial. No es necesario cumplir con el 75% de asistencia. No es necesario aprobar el 100% de las instancias de evaluación.", "respuesta": false, "correccion": "Solo admitirán el cursado regular presencial. Cumplimentar con el 75% de asistencia. Aprobar el 100% de las instancias de evalución."},
+        {"pregunta": "La regularidad tendrá validez durante 3 (tres) años consecutivos a partir del primer turno correspondiente al año lectivo siguiente al de la cursada.", "respuesta": true, "correccion": ""},
+        {"pregunta": "Quedan excluidos de este régimen, de estudiante libres los Talleres, Seminarios, Trabajo de Campo, Módulos, Laboratorio y Proyectos.", "respuesta": true, "correccion": ""},
+        {"pregunta": "La asistencia se computará por cada unidad Curricular y Hora de clase dictada, consignado presente y/o ausente en un registro de asistencia institucional.", "respuesta": true, "correccion": ""},
+        {"pregunta": "Exigencias de presentación de un trabajo final de escritura académica. La regularidad tendrá validez de más de un año a partir del primer turno de examen.", "respuesta": false, "correccion": "Exigencias de presentación de un trabajo final de escritura académica. La regularidad tendrá validez de un año a partir del primer turno de examen"},
+        {"pregunta": "El estudiante que no haya aprobado podrá presentarse hasta dos turnos consecutivos inmediatos posteriores a la finalización del cursado.", "respuesta": true, "correccion": ""},
+    ];
+
+    var valorPregunta = 10 / preguntas.length;
+    var preguntasAleatorias = preguntas.slice().sort(() => Math.random() - 0.5);
+    var indicePreguntaActual = 0;
+    var puntaje = 0;
+
+    function mostrarPregunta() {
+        var preguntaActual = preguntasAleatorias[indicePreguntaActual];
+        var preguntaContainer = document.getElementById("pregunta-container");
+        var nuevaPregunta = document.createElement("div");
+        nuevaPregunta.className = "pregunta";
+        nuevaPregunta.innerHTML = preguntaActual.pregunta;
+        preguntaContainer.appendChild(nuevaPregunta);
+    }
+
+    function siguientePregunta() {
+        var respuestaUsuario = document.querySelector('input[name="respuesta"]:checked');
+        if (respuestaUsuario) {
+            var preguntaActual = preguntasAleatorias[indicePreguntaActual];
+
+            if ((respuestaUsuario.value === "V" && preguntaActual.respuesta) ||
+                (respuestaUsuario.value === "F" && !preguntaActual.respuesta)) {
+                puntaje += valorPregunta;
+            } else {
+                // Mostrar mensaje de corrección
+                mostrarCorreccion(preguntaActual);
+            }
+
+            indicePreguntaActual++;
+
+            if (indicePreguntaActual < preguntasAleatorias.length) {
+                mostrarPregunta();
+                // Deseleccionar radios
+                document.getElementById("verdadero").checked = false;
+                document.getElementById("falso").checked = false;
+            } else {
+                mostrarResultado();
+            }
+        }
+    }
+
+    function mostrarCorreccion(pregunta) {
+        var correccionContainer = document.getElementById("resultado-container");
+        correccionContainer.innerHTML += `Incorrecto, la respuesta correcta es:<br>${pregunta.correccion}<br>`;
+    }
+
+    function mostrarResultado() {
+        var resultadoContainer = document.getElementById("resultado-container");
+        resultadoContainer.innerHTML = "Tu puntaje final es: " + puntaje.toFixed(2);
+
+        if (puntaje >= 8) {
+            resultadoContainer.innerHTML += "<br>¡Felicidades! Has promocionado el cuestionario.";
+        } else if (puntaje >= 6) {
+            resultadoContainer.innerHTML += "<br>¡Felicidades! Has aprobado el cuestionario.";
+        } else {
+            resultadoContainer.innerHTML += "<br>Lo siento, no has alcanzado la puntuación necesaria para aprobar.";
+        }
+    }
+
+    // Inicializar la primera pregunta al cargar la página
+    mostrarPregunta();
+</script>
+
+</body>
+</html>
